@@ -52,9 +52,9 @@ const Input = styled.input<{ borderColor: string }>`
   }
 `;
 
-const Button = styled.button`
+const Button = styled.button<{ admin?: boolean }>`
   padding: 12px;
-  background-color: #5DADE2;
+  background-color: ${(props) => (props.admin ? '#E74C3C' : '#5DADE2')};
   color: white;
   border: none;
   border-radius: 8px;
@@ -65,7 +65,7 @@ const Button = styled.button`
   margin-top: 12px;
   transition: background-color 0.3s;
   &:hover {
-    background-color: #3498DB;
+    background-color: ${(props) => (props.admin ? '#C0392B' : '#3498DB')};
   }
   &:disabled {
     background-color: #ccc;
@@ -93,8 +93,6 @@ const ImageWrapper = styled.div`
     border-radius: 12px;
   }
 `;
-
-
 
 const schema = z.object({
   username: z.string().email('Por favor, insira um email válido.'),
@@ -132,58 +130,73 @@ export default function LoginPage() {
     return errors.password ? '#E74C3C' : '#2ECC71';
   };
 
-  const onSubmit = async (data: FormData) => {
-    await login();
-    navigate('/admin');
+  const handleLogin = async (data: FormData, isAdmin: boolean) => {
+    const token = await login(data.username, data.password); 
+    if (token) {
+
+      const userRole = isAdmin ? 'admin' : 'user';
+      localStorage.setItem('role', userRole);
+      navigate(isAdmin ? '/admin' : '/home');
+    } else {
+      alert("Falha ao tentar realizar login.");
+    }
   };
 
   return (
     <LoginContainer>
-
       <ContentWrapper>
         <ImageWrapper>
           <img src="/trackerpet.png" alt="Pets Felizes" />
         </ImageWrapper>
-        <LoginForm onSubmit={handleSubmit(onSubmit)}>
-        <h2>Login</h2>
+        <LoginForm onSubmit={handleSubmit((data) => handleLogin(data, false))}>
+          <h2>Login</h2>
 
-        <Controller
-          name="username"
-          control={control}
-          render={({ field }) => (
-            <Input
-              type="email"
-              placeholder="Usuário (Email)"
-              {...field}
-              borderColor={getEmailBorderColor(field.value)}
-              onFocus={() => setUsernameTouched(true)}
-              aria-label="Email"
-            />
-          )}
-        />
-        {errors.username && <ErrorText>{errors.username.message}</ErrorText>}
-        {!errors.username && usernameValue?.includes('@') && <SuccessText>Email válido</SuccessText>}
+          <Controller
+            name="username"
+            control={control}
+            render={({ field }) => (
+              <Input
+                type="email"
+                placeholder="Usuário (Email)"
+                {...field}
+                borderColor={getEmailBorderColor(field.value)}
+                onFocus={() => setUsernameTouched(true)}
+                aria-label="Email"
+              />
+            )}
+          />
+          {errors.username && <ErrorText>{errors.username.message}</ErrorText>}
+          {!errors.username && usernameValue?.includes('@') && <SuccessText>Email válido</SuccessText>}
 
-        <Controller
-          name="password"
-          control={control}
-          render={({ field }) => (
-            <Input
-              type="password"
-              placeholder="Senha"
-              {...field}
-              borderColor={getPasswordBorderColor(field.value)}
-              onFocus={() => setPasswordTouched(true)}
-              aria-label="Senha"
-            />
-          )}
-        />
-        {errors.password && <ErrorText>{errors.password.message}</ErrorText>}
+          <Controller
+            name="password"
+            control={control}
+            render={({ field }) => (
+              <Input
+                type="password"
+                placeholder="Senha"
+                {...field}
+                borderColor={getPasswordBorderColor(field.value)}
+                onFocus={() => setPasswordTouched(true)}
+                aria-label="Senha"
+              />
+            )}
+          />
+          {errors.password && <ErrorText>{errors.password.message}</ErrorText>}
 
-        <Button type="submit" disabled={!isValid || isSubmitting}>
-          {isSubmitting ? 'Entrando...' : 'Entrar'}
-        </Button>
-      </LoginForm>
+          <Button type="submit" disabled={!isValid || isSubmitting}>
+            {isSubmitting ? 'Entrando...' : 'Entrar como Usuário'}
+          </Button>
+
+          <Button
+            type="button"
+            admin
+            disabled={!isValid || isSubmitting}
+            onClick={handleSubmit((data) => handleLogin(data, true))}
+          >
+            {isSubmitting ? 'Entrando...' : 'Entrar como Admin'}
+          </Button>
+        </LoginForm>
       </ContentWrapper>
     </LoginContainer>
   );

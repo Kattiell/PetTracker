@@ -1,32 +1,19 @@
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import styled from "styled-components";
+import { BrowserRouter as Router, Route, Routes, useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 import LoginPage from "./pages/LoginPage";
 import AdminDashboard from "./pages/AdminDashBoard";
 import UserList from "./pages/UserList";
 import PetProfile from "./pages/PetProfile";
 import PetTracker from "./pages/PetTracker";
-
 import Header from "./components/Header/Header";
 import Footer from "./components/Footer/Footer";
 import Sidebar from "./components/Sidebar/Sidebar";
 import { AuthProvider, useAuth } from "./context/AuthContext";
-
 import Register from "./pages/Register";
-import "./index.css";
-import { SidebarProvider } from "./context/SideBarContext";
+import { SidebarProvider } from "./context/SidebarContext";
+import { ProtectedRoute } from "./context/AuthMiddleware";
 
-const Container = styled.div`
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-`;
-
-const Content = styled.div`
-  display: flex;
-  flex: 1;
-`;
-
-export default function APP() {
+export default function App() {
   return (
     <AuthProvider>
       <SidebarProvider>
@@ -39,28 +26,51 @@ export default function APP() {
 }
 
 function Main() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, role } = useAuth();
+  const navigate = useNavigate();
 
+  useEffect(() => {
+    if (isAuthenticated === false) {
+      navigate("/login");
+    }
+    if (isAuthenticated && role && location.pathname === "/login") {
+      navigate(role === "admin" ? "/admin" : "/home");
+    }
+  }, [isAuthenticated, role, navigate]);
+  
+  
+  
   return (
-    <Container>
+    <>
       <Header />
-      <Content>
-        {isAuthenticated && <Sidebar />}
-        <Routes>
-          {isAuthenticated ? (
-            <>
-              <Route path="/admin" element={<AdminDashboard />} />
-              <Route path="/users" element={<UserList />} />
-              <Route path="/pet/:id" element={<PetProfile />} />
-              <Route path="/track/:id" element={<PetTracker />} />
-              <Route path="/register" element={<Register />} />
-            </>
-          ) : (
-            <Route path="/" element={<LoginPage />} />
-          )}
-        </Routes>
-      </Content>
+      {isAuthenticated && <Sidebar />}
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute>
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/users"
+          element={
+            <ProtectedRoute>
+              <UserList />
+            </ProtectedRoute>
+          }
+        />
+        {isAuthenticated && role !== "admin" && (
+          <>
+            <Route path="/pet/:id" element={<PetProfile />} />
+            <Route path="/track/:id" element={<PetTracker />} />
+          </>
+        )}
+        <Route path="/register" element={<Register />} />
+      </Routes>
       <Footer />
-    </Container>
+    </>
   );
 }

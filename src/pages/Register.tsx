@@ -117,7 +117,7 @@ const Register: React.FC = () => {
   return (
     <Container>
        <Header />
-      <Sidebar /> {/* Chamada do componente Sidebar */}
+      <Sidebar /> 
       <ContentWrapper>
         <FormWrapper>
           <Title>Registro</Title>

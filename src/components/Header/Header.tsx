@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import { useLocation } from "react-router-dom";
 import { FaBars } from "react-icons/fa";
-import { useSidebar } from "../../context/SideBarContext";
+import { useSidebar } from "../../context/SidebarContext";
 
 const HeaderContainer = styled.header`
   position: fixed;
@@ -9,41 +9,45 @@ const HeaderContainer = styled.header`
   left: 0;
   width: 100%;
   height: 70px;
-  background: linear-gradient(to right, #f5a25d, #ff7f50);
+  background: linear-gradient(to right, #ff9a5a, #ff6b81); 
   display: flex;
   align-items: center;
   padding: 0 20px;
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.08);
   z-index: 9;
 `;
 
-const ToggleButton = styled.button`
+const ToggleButton = styled.button` 
   background: none;
   border: none;
-  color: white;
+  color: #fff;
   font-size: 24px;
   margin-right: 20px;
   cursor: pointer;
-  transition: transform 0.2s;
+  transition: all 0.3s ease;
 
   &:hover {
     transform: scale(1.1);
+    color: #ffeaa7;
   }
 `;
 
 const Title = styled.h1`
   font-size: 1.8rem;
-  font-weight: bold;
+  font-weight: 600;
   color: #fff;
   text-transform: uppercase;
   letter-spacing: 1px;
+  font-family: 'Inter', sans-serif; 
 `;
+
+
 
 export default function Header() {
   const location = useLocation();
-  const { toggleSidebar } = useSidebar(); // Obtém a função para abrir/fechar o menu
+  const { toggleSidebar } = useSidebar();
 
-  if (location.pathname === "/") {
+  if (location.pathname === "/login") {
     return null;
   }
 

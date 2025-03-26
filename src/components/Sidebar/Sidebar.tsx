@@ -1,27 +1,25 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
+import { FaUser, FaClipboardList, FaSearch, FaHome, FaSignOutAlt } from "react-icons/fa";
+import { useSidebar } from "../../context/SidebarContext";
+import { useAuth } from "../../context/AuthContext";
 
-import { FaUser, FaClipboardList, FaSearch, FaHome } from "react-icons/fa";
-import { useSidebar } from "../../context/SideBarContext";
-
-interface SidebarProps {
-  expanded: boolean;
-}
-
-const SidebarContainer = styled.div<SidebarProps>`
+const SidebarContainer = styled.div<{ expanded: boolean }>`
   width: ${(props) => (props.expanded ? "250px" : "0")};
-  height: calc(100vh - 60px); /* Ajuste para ficar abaixo do Header */
+  height: calc(100vh - 60px);
   background: linear-gradient(135deg, #fae1b4, #ff914d);
   color: black;
   transition: width 0.3s;
   overflow: hidden;
   position: fixed;
-  top: 70px; /* Distância do topo para alinhar abaixo do Header */
+  top: 70px;
   left: 0;
   box-shadow: ${(props) => (props.expanded ? "4px 0px 10px rgba(0, 0, 0, 0.2)" : "none")};
-  z-index: 1000; /* Garante que o sidebar fique acima do conteúdo */
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 `;
-;
 
 const MenuList = styled.ul`
   list-style: none;
@@ -57,14 +55,44 @@ const MenuItem = styled.li`
   }
 `;
 
-export default function Sidebar() {
-  const { isExpanded } = useSidebar();
-  const location = useLocation();
+const LogoutButton = styled.button`
+  width: 100%;
+  padding: 15px;
+  background: transparent;
+  border: none;
+  color: black;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  justify-content: center;
 
-  if (location.pathname === "/") return null;
+  &:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
+`;
+
+export default function Sidebar() {
+  const { isExpanded, setSidebarState } = useSidebar();
+  const { setIsAuthenticated } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  if (location.pathname === "/login") return null;
+
+  const handleLogout = () => {
+    localStorage.removeItem("authToken"); 
+    sessionStorage.clear(); 
+    setIsAuthenticated(false); 
+
+    setTimeout(() => {
+      navigate("/login");
+    }, 200); 
+  };
 
   return (
-    <SidebarContainer expanded={isExpanded}>
+    <SidebarContainer expanded={isExpanded} onMouseLeave={() => setSidebarState(false)}>
       <MenuList>
         <MenuItem>
           <Link to="/admin">
@@ -87,6 +115,10 @@ export default function Sidebar() {
           </Link>
         </MenuItem>
       </MenuList>
+
+      <LogoutButton onClick={handleLogout}>
+        <FaSignOutAlt /> Sair
+      </LogoutButton>
     </SidebarContainer>
   );
 }
